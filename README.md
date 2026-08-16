@@ -12,7 +12,3 @@ Tutorials are available on the wiki at https://github.com/SkriptLang/skript-worl
 skript-worldguard is designed for Skript 2.14.0 and newer.
 It works with all Minecraft versions supported by Skript 2.14.0.
 
-## Credits 
-
-### Maintainer
-- Sahur01-arch
