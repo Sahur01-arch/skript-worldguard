@@ -17,28 +17,52 @@ java {
 
 repositories {
     mavenCentral()
-    maven { url 'https://repo.skriptlang.org/releases' }
-    maven { url 'https://repo.purpurmc.org/snapshots' }
-    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
-    maven { url "https://maven.enginehub.org/repo/" }
+
+    maven {
+        url 'https://repo.skriptlang.org/releases'
+    }
+
+    maven {
+        url 'https://repo.purpurmc.org/snapshots'
+    }
+
+    maven {
+        url 'https://oss.sonatype.org/content/repositories/snapshots'
+    }
+
+    maven {
+        url 'https://maven.enginehub.org/repo/'
+    }
 }
 
 dependencies {
-    // eclipse annotations are only present for IDE analysis, they should not be used
-    implementation group: 'org.jetbrains', name: 'annotations', version: '24.1.0'
+    // Eclipse/IDE annotations only.
+    // Not bundled into the addon JAR.
+    compileOnly group: 'org.jetbrains', name: 'annotations', version: '24.1.0'
 
-    // Target Purpur/Paper API 26.2 (menggantikan spigot-api 1.19.4 lama)
-    implementation group: 'org.purpurmc.purpur', name: 'purpur-api', version: '26.2.build.+'
+    // Target Purpur/Paper API 26.2.
+    // Provided by the Minecraft server.
+    compileOnly group: 'org.purpurmc.purpur', name: 'purpur-api', version: '26.2.build.2620-stable'
 
-    // Skript versi yang sudah support Paper/Purpur 26.2 (lihat changelog Skript 2.16.0)
-    implementation (group: 'com.github.SkriptLang', name: 'Skript', version: '2.16.0') {
+    // Skript API.
+    // Provided by the server.
+    compileOnly(group: 'com.github.SkriptLang', name: 'Skript', version: '2.16.0') {
         transitive = false
     }
 
-    // WorldGuard versi terbaru yang stabil
-    implementation (group: 'com.sk89q.worldguard', name: 'worldguard-bukkit', version: '7.0.12') {
+    // WorldGuard API.
+    // Provided by the server.
+    compileOnly(group: 'com.sk89q.worldguard', name: 'worldguard-bukkit', version: '7.0.18') {
         exclude module: 'bstats-bukkit'
     }
+}
+
+configurations.configureEach {
+    resolutionStrategy.force(
+        'com.google.guava:guava:33.6.0-jre',
+        'com.google.code.gson:gson:2.14.0',
+        'it.unimi.dsi:fastutil:8.5.18'
+    )
 }
 
 processResources {
@@ -50,15 +74,21 @@ processResources {
 tasks.register('nightlyResources', ProcessResources) {
     from 'src/main/resources', {
         include '**'
+
         filter ReplaceTokens, tokens: [
-                'version': project.property('version') + '-nightly-' + 'git rev-parse --short HEAD'.execute().text.trim()
+            'version': project.property('version') +
+                    '-nightly-' +
+                    'git rev-parse --short HEAD'.execute().text.trim()
         ]
     }
+
     into 'build/resources/main'
 }
 
 tasks.register('nightlyBuild', Jar) {
     dependsOn nightlyResources
+
     from sourceSets.main.output
+
     archiveFileName = 'skript-worldguard-nightly.jar'
 }
